@@ -20,4 +20,5 @@ type Victim = {
   Bit: string;
   RatTedVersion: string;
   ID: string;
+  Current_Directory: string;
 };

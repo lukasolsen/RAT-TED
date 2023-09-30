@@ -1,12 +1,13 @@
 import { FaTerminal } from "react-icons/fa";
 import { runVictimCommand } from "../service/api.service";
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 
 type TerminalProps = {
   id: string;
+  currentDirectory: string;
 };
 
-const Terminal: React.FC<TerminalProps> = ({ id }) => {
+const Terminal: React.FC<TerminalProps> = ({ id, currentDirectory }) => {
   const [command, setCommand] = useState("");
   const [commands, setCommands] = useState<string[]>([]);
   const [responses, setResponses] = useState<string[]>([]);
@@ -74,25 +75,31 @@ const Terminal: React.FC<TerminalProps> = ({ id }) => {
       </div>
 
       {/* CMD-style terminal input and button */}
-      <div className="">
-        <div className="flex items-center">
-          <span className="text-green-400">C:\Users\lukma&gt;</span>
+      <div className="mt-4">
+        <div className="flex items-center gap-2 bg-slate-950 rounded-lg p-2">
+          <span className="text-green-400">{currentDirectory}&gt;</span>
           <textarea
-            className="w-full text-green-400 bg-transparent rounded-lg p-4 shadow-md"
-            placeholder=""
+            className="flex-grow text-green-400 bg-transparent focus:outline-none"
+            placeholder="Enter command here..."
             value={command}
             onChange={(e) => setCommand(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                executeCommand();
+              }
+            }}
           ></textarea>
+          <button
+            className="py-2 px-4 bg-green-400 hover:bg-green-500 text-black rounded-lg"
+            onClick={(e) => {
+              e.preventDefault();
+              executeCommand();
+            }}
+          >
+            Execute Command
+          </button>
         </div>
-        <button
-          className="py-2 px-4 bg-green-400 hover:bg-green-500 text-black rounded-sm mt-4"
-          onClick={(e) => {
-            e.preventDefault();
-            executeCommand();
-          }}
-        >
-          Execute Command
-        </button>
       </div>
     </div>
   );

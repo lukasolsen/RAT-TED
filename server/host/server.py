@@ -45,6 +45,7 @@ class RAT_SERVER(metaclass=SingletonMeta):
             output_dict = {}
             for item in output:
                 item = item.split(":")
+                item[1] = item[1].replace("colon", ":")
                 output_dict[item[0]] = item[1]
 
             print(
