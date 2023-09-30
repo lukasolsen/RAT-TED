@@ -70,10 +70,10 @@ const Dashboard: React.FC = () => {
         </header>
 
         {/* Render content based on the tab */}
-        {tab === "clients" ? (
+        {tab.includes("clients") ? (
           <Clients />
-        ) : tab === "client" ? (
-          <ClientDetail/>
+        ) : tab.includes("client") ? (
+          <ClientDetail />
         ) : (
           <Home />
         )}

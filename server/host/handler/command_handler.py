@@ -14,7 +14,7 @@ def command(name):
 # Function to execute a command
 
 
-def execute_command(self, command, client_socket):
+def execute_command(self, command_type, command, client_socket):
     command_parts = command.split()
     command_name = command_parts[0]
     args = command_parts[1:]
@@ -25,5 +25,7 @@ def execute_command(self, command, client_socket):
         except TypeError:
             print("Invalid number of arguments")
     else:
+
+        rounded = "command_type:" + command_type + "|command:" + command
         # You can handle unsupported commands here or send them to the client
-        client_socket.send(command.encode())
+        client_socket.send(rounded.encode())

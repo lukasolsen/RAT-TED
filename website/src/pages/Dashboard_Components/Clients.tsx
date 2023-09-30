@@ -1,53 +1,65 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useTable } from "react-table";
+import { getVictims } from "../../service/api.service";
 
 const Clients: React.FC = () => {
-  const data = React.useMemo(
-    () => [
-      {
-        clientName: "Client 1",
-        ipAddress: "192.168.1.1",
-        active: "Yes",
-      },
-      {
-        clientName: "Client 2",
-        ipAddress: "192.168.1.2",
-        active: "No",
-      },
-      // Add more client data as needed
-    ],
-    []
-  );
+  const [victims, setVictims] = React.useState<Victims[]>([]);
+
+  // Use memo to avoid re-rendering unless the data changes
+  const data = React.useMemo(() => victims, [victims]);
+
+  useEffect(() => {
+    const fetchVictims = async () => {
+      try {
+        const response = await getVictims();
+        setVictims(response.data.clients);
+        console.log(response.data.clients);
+      } catch (error) {
+        console.error("Error fetching victims:", error);
+      }
+    };
+
+    fetchVictims();
+  }, []); // Add an empty dependency array to trigger the effect only once
 
   // Define table columns
   const columns = React.useMemo(
     () => [
       {
         Header: "Client Name",
-        accessor: "clientName",
+        accessor: "name",
       },
       {
         Header: "IP Address",
-        accessor: "ipAddress",
+        accessor: "ip",
       },
       {
         Header: "Active",
-        accessor: "active",
+        accessor: "status",
         Cell: ({ row }: any) => (
           <span
             className={`${
-              row.values.active === "Yes" ? "text-green-500" : "text-red-500"
+              row.values.status === "Online" ? "text-green-500" : "text-red-500"
             }`}
           >
-            {row.values.active}
+            {row.values.status}
           </span>
         ),
       },
       {
         Header: "Actions",
-        accessor: "actions",
+        accessor: "uuid",
         Cell: ({ row }: any) => (
-          <button className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg">
+          <button
+            className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg"
+            onClick={(e) => {
+              console.log(row);
+              e.preventDefault();
+              if (row && row.values.uuid) {
+                window.location.href = `/dashboard#client?id=${row.values.uuid}`;
+              }
+            }}
+          >
             View
           </button>
         ),
@@ -58,7 +70,7 @@ const Clients: React.FC = () => {
 
   // Create a table instance
   const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } =
-    useTable({ columns, data });
+    useTable({ columns, data }); // Provide the 'data' prop
 
   return (
     <div className="container mx-auto p-6">
@@ -68,35 +80,37 @@ const Clients: React.FC = () => {
         </h2>
 
         {/* React Table */}
-        <table {...getTableProps()} className="w-full">
-          <thead>
-            {headerGroups.map((headerGroup: any) => (
-              <tr {...headerGroup.getHeaderGroupProps()}>
-                {headerGroup.headers.map((column: any) => (
-                  <th {...column.getHeaderProps()} className="text-left">
-                    {column.render("Header")}
-                  </th>
-                ))}
-              </tr>
-            ))}
-          </thead>
-          <tbody {...getTableBodyProps()}>
-            {rows.map((row: any) => {
-              prepareRow(row);
-              return (
-                <tr {...row.getRowProps()}>
-                  {row.cells.map((cell: any) => {
-                    return (
-                      <td {...cell.getCellProps()} className="py-2">
-                        {cell.render("Cell")}
-                      </td>
-                    );
-                  })}
+        {victims.length !== 0 && (
+          <table {...getTableProps()} className="w-full">
+            <thead>
+              {headerGroups.map((headerGroup: any) => (
+                <tr {...headerGroup.getHeaderGroupProps()}>
+                  {headerGroup.headers.map((column: any) => (
+                    <th {...column.getHeaderProps()} className="text-left">
+                      {column.render("Header")}
+                    </th>
+                  ))}
                 </tr>
-              );
-            })}
-          </tbody>
-        </table>
+              ))}
+            </thead>
+            <tbody {...getTableBodyProps()}>
+              {rows.map((row: any) => {
+                prepareRow(row);
+                return (
+                  <tr {...row.getRowProps()}>
+                    {row.cells.map((cell: any) => {
+                      return (
+                        <td {...cell.getCellProps()} className="py-2">
+                          {cell.render("Cell")}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        )}
       </div>
     </div>
   );

