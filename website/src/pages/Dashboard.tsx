@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
-import Clients from "./Dashboard_Components/Clients";
-import Home from "./Dashboard_Components/Home";
-import ClientDetail from "./Dashboard_Components/ClientDetail";
+import Clients from "./dashboard/Clients";
+import Home from "./dashboard/Home";
+import ClientDetail from "./dashboard/ClientDetail";
 
 const Dashboard: React.FC = () => {
   // Function to update the tab based on the URL hash
