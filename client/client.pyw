@@ -11,6 +11,10 @@ from multiprocessing import Process
 import cv2
 from PIL import ImageGrab
 import numpy as np
+import pickle
+import struct
+import io
+import time
 
 user32 = ctypes.WinDLL('user32')
 kernel32 = ctypes.WinDLL('kernel32')
@@ -32,26 +36,26 @@ class ScreenShare():
         # Start a socket connection. If connected, allow to continue
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.host = "localhost"
-        self.port = 8080
+        self.port = 8090
+
+        self.cooldown = 0.5
 
     def start_screenshare(self):
         print("[*] Starting  :D :D screen share")
         self.s.connect((self.host, self.port))
         self.connected = True
         print("[*] Connected to server")
-        # Start the screenshare, send images towards the server. The server will then turn it into images
+
         while True:
             try:
                 print("Trying to send image")
                 # Get the image
                 img = self.get_screenshot()
 
-                # Send the image to the server
-                print("[*] Sending image" + str(img.shape))
-
-                # Save the file to the system before sending it
-                # cv2.imwrite("temp" + uuid.uuid4().hex + ".jpg", img)
                 self.s.sendall(img)
+
+                # Introduce a cooldown (in seconds) before sending the next screenshot
+                time.sleep(self.cooldown)
 
             except Exception as e:
                 print(f"Error sending image: {str(e)}")
@@ -59,11 +63,22 @@ class ScreenShare():
                 break
 
     def get_screenshot(self):
-        # Get the screenshot of the current screen and return it as a numpy array
+        # Get the image, then make it into raw material, then send it to the server
         img = ImageGrab.grab()
-        img = np.array(img)
 
-        return img
+        # Save the image to a file
+        img.save("image.png")
+
+        # Open the image
+        file = open("image.png", "rb")
+
+        data = file.read()
+        # Close the file
+        file.close()
+        # Remove the file
+        os.remove("image.png")
+
+        return data
 
     def stop_screenshare(self):
         self.connected = False
