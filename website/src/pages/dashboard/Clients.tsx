@@ -111,6 +111,11 @@ const Clients: React.FC = () => {
             </tbody>
           </table>
         )}
+
+        {/* Show a message if there are no victims */}
+        {victims.length === 0 && (
+          <p className="text-center text-gray-400">No victims found.</p>
+        )}
       </div>
     </div>
   );

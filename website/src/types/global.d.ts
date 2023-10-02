@@ -18,7 +18,7 @@ type Victim = {
   Uptime: string;
   Privileges: string;
   Bit: string;
-  RatTedVersion: string;
+  "Rat-Ted-Version": string;
   ID: string;
   Current_Directory: string;
 };

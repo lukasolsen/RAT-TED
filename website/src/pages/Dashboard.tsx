@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import Clients from "./dashboard/Clients";
 import Home from "./dashboard/Home";
 import ClientDetail from "./dashboard/ClientDetail";
+import { FaHome, FaUsers, FaCog } from "react-icons/fa";
 
 const Dashboard: React.FC = () => {
   // Function to update the tab based on the URL hash
@@ -29,46 +30,40 @@ const Dashboard: React.FC = () => {
   const [tab, setTab] = React.useState("home");
 
   return (
-    <div className="flex h-screen dark:bg-slate-900">
+    <div className="flex h-screen dark:bg-slate-900 overflow-hidden">
       {/* Sidebar */}
       <aside className="w-1/5 dark:bg-slate-950 text-white overflow-y-auto transition-transform duration-300 transform -translate-x-full dark:translate-x-0">
-        <nav className="p-4 space-y-2">
+        <nav className="p-4 space-y-2 w-full">
           {/* Sidebar links */}
           <button
             onClick={() => changeTab("home")}
-            className={`block py-2 px-4 hover:bg-blue-600 hover:text-white ${
+            className={`flex items-center py-2 px-4 hover:bg-blue-600 hover:text-white w-full rounded-sm ${
               tab === "home" ? "bg-blue-600 text-white" : ""
             }`}
           >
-            Dashboard
+            <FaHome className="mr-4 text-lg" /> Dashboard
           </button>
           <button
             onClick={() => changeTab("clients")}
-            className={`block py-2 px-4 hover:bg-blue-600 hover:text-white ${
+            className={`flex items-center py-2 px-4 hover:bg-blue-600 hover:text-white w-full rounded-sm ${
               tab === "clients" ? "bg-blue-600 text-white" : ""
             }`}
           >
-            Clients
+            <FaUsers className="mr-4 text-lg" /> Clients
           </button>
           <button
             onClick={() => changeTab("settings")}
-            className={`block py-2 px-4 hover:bg-blue-600 hover:text-white ${
+            className={`flex items-center py-2 px-4 hover:bg-blue-600 hover:text-white w-full rounded-sm ${
               tab === "settings" ? "bg-blue-600 text-white" : ""
             }`}
           >
-            Settings
+            <FaCog className="mr-4 text-lg" /> Settings
           </button>
         </nav>
       </aside>
 
       {/* Main content */}
-      <main className="flex-1 ml-0 sm:ml-1/5 transition-transform duration-300 transform">
-        <header className="py-4 ">
-          <div className="container mx-auto">
-            <h1 className="text-2xl text-white">Dashboard</h1>
-          </div>
-        </header>
-
+      <main className="flex-1 transition-transform duration-300 transform container mx-auto p-4">
         {/* Render content based on the tab */}
         {tab.includes("clients") ? (
           <Clients />

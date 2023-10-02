@@ -4,7 +4,7 @@ type DetailsProps = {
   client: Victim;
 };
 
-const Details: React.FC<DetailsProps> = ({client}) => {
+const Details: React.FC<DetailsProps> = ({ client }) => {
   return (
     <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-6">
       <div className="col-span-1 sm:col-span-2">
@@ -79,7 +79,7 @@ const Details: React.FC<DetailsProps> = ({client}) => {
             Privilege Level: {client.Privileges}
           </p>
           <p className="text-gray-500 dark:text-gray-400">
-            Rat-Ted Version: {client.RatTedVersion}
+            Rat-Ted Version: {client["Rat-Ted-Version"]}
           </p>
         </div>
       </div>
