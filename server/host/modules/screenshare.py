@@ -77,6 +77,10 @@ class ScreenShareManager():
 
             except Exception as e:
                 print(f"Error handling client: {str(e)}")
+                for client in self.clients:
+                    if client[0] == client_socket:
+                        print(
+                            f"[*] Client {client[1][0]} disconnected from file transfer")
                 break
 
         # After the loop, make a video from the images

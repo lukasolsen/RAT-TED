@@ -27,7 +27,7 @@ const Clients: React.FC = () => {
     () => [
       {
         Header: "Client Name",
-        accessor: "name",
+        accessor: "computer_name",
       },
       {
         Header: "IP Address",
@@ -48,15 +48,15 @@ const Clients: React.FC = () => {
       },
       {
         Header: "Actions",
-        accessor: "uuid",
+        accessor: "id",
         Cell: ({ row }: any) => (
           <button
             className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg"
             onClick={(e) => {
               console.log(row);
               e.preventDefault();
-              if (row && row.values.uuid) {
-                window.location.href = `/dashboard#client?id=${row.values.uuid}`;
+              if (row && row.values.id) {
+                window.location.href = `/dashboard#client?id=${row.values.id}`;
               }
             }}
           >
@@ -67,6 +67,8 @@ const Clients: React.FC = () => {
     ],
     []
   );
+
+  console.log(victims);
 
   // Create a table instance
   const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } =

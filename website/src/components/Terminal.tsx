@@ -3,14 +3,15 @@ import { runVictimCommand } from "../service/api.service";
 import React, { useState } from "react";
 
 type TerminalProps = {
-  id: string;
+  id: number;
   currentDirectory: string;
 };
 
 const Terminal: React.FC<TerminalProps> = ({ id, currentDirectory }) => {
   const [command, setCommand] = useState("");
   const [commands, setCommands] = useState<string[]>([]);
-  const [responses, setResponses] = useState<string[]>([]);
+
+  const [responses, setResponses] = useState<CommandResultType[]>([]);
   const [selectedLanguage, setSelectedLanguage] = useState("Powershell"); // Default language
 
   const executeCommand = async () => {
@@ -20,14 +21,19 @@ const Terminal: React.FC<TerminalProps> = ({ id, currentDirectory }) => {
         command,
         selectedLanguage.toLowerCase()
       );
-      const newResponse = result.data.output;
+      const newResponse: CommandResultType = result.data.output;
+      // this is currently a string, turn it into an object
+      console.log(newResponse);
       setResponses([...responses, newResponse]);
       setCommands([...commands, command]);
       setCommand("");
     } catch (error) {
       setResponses([
         ...responses,
-        "An error occurred while executing the command.",
+        {
+          result: "An error occurred while executing the command.",
+          error: "Error",
+        },
       ]);
     }
   };
@@ -61,14 +67,16 @@ const Terminal: React.FC<TerminalProps> = ({ id, currentDirectory }) => {
       <div className="p-4">
         <pre className="whitespace-pre-wrap flex flex-col gap-y-12">
           <div>
-            Rat-Ted [Version 1.0.0] (c) 2021 Rat-Ted Corporation. All rights
+            Rat-Ted [Version 1.0.0] (c) 2023 Rat-Ted Corporation. All rights
             reserved.
           </div>
 
           {commands.map((command, index) => (
             <div key={index} className="flex flex-col gap-y-2">
               {command}
-              <span>{responses[index]}</span>
+              <span className={`${responses[index].error && "text-red-600"}`}>
+                {responses[index].result}
+              </span>
             </div>
           ))}
         </pre>

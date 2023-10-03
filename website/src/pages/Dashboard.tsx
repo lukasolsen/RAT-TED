@@ -30,7 +30,7 @@ const Dashboard: React.FC = () => {
   const [tab, setTab] = React.useState("home");
 
   return (
-    <div className="flex h-screen dark:bg-slate-900 overflow-hidden">
+    <div className="flex h-full min-h-screen dark:bg-slate-900">
       {/* Sidebar */}
       <aside className="w-1/5 dark:bg-slate-950 text-white overflow-y-auto transition-transform duration-300 transform -translate-x-full dark:translate-x-0">
         <nav className="p-4 space-y-2 w-full">
