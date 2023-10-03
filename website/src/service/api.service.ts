@@ -1,6 +1,6 @@
 import axios from "axios";
 // For server: http://192.168.98.223:8000/api/v1/
-const API_URL = "http://192.168.98.223:8000/api/v1/";
+const API_URL = "http://localhost:8000/api/v1/";
 
 export const register = (username: string, email: string, password: string) => {
   return axios

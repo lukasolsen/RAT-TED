@@ -101,6 +101,7 @@ import json
 def gatherInfoOutput(data):
     try:
         # Turn the string into a dictionary
+        print(data)
         data = json.loads(data)
         return data
 

